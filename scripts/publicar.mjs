@@ -35,6 +35,14 @@ if (process.env.MODO === 'verificar') {
   const j = await r.json();
   if (!r.ok) { console.error('Instagram: ERRO', JSON.stringify(j.error || j)); process.exit(1); }
   const lim = await (await fetch(`${GRAPH}/${id}/content_publishing_limit?fields=quota_usage,config&access_token=${token}`)).json();
+  const dbg = await (await fetch(`${GRAPH}/debug_token?input_token=${token}&access_token=${token}`)).json();
+  const t = dbg.data || {};
+  const venc = t.expires_at ? (t.expires_at === 0 ? 'nunca' : new Date(t.expires_at * 1000).toISOString().slice(0, 10)) : 'nunca';
+  console.log(`Token: tipo ${t.type}, válido ${t.is_valid}, vence ${venc}, app ${t.application} (${t.app_id}), permissões ${(t.scopes || []).join(', ')}`);
+  if (t.app_id) {
+    const app = await (await fetch(`${GRAPH}/${t.app_id}?fields=name,link&access_token=${token}`)).json();
+    console.log('App:', JSON.stringify(app.error ? app.error.message : app));
+  }
   console.log(`Instagram OK: @${j.username} (${j.media_count} posts). Limite de publicação: ${JSON.stringify(lim.data?.[0] || lim.error?.message || lim)}`);
   process.exit(0);
 }
