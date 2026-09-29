@@ -89,12 +89,13 @@ async function linkedin() {
   const { LINKEDIN_ORG_ID: org, LINKEDIN_ACCESS_TOKEN: token } = process.env;
   if (registro[post.slug].linkedin) return console.log('LinkedIn: já publicado, pulando.');
   const pdf = `pdf/${post.slug}.pdf`;
-  if (!org || !token || process.env.MODO === 'ensaio') return console.log(`LinkedIn (simulação): documento ${pdf} + legenda.`);
+  if (!org || !token) return console.log(`LinkedIn (simulação): documento ${pdf} + legenda.`);
   const owner = `urn:li:organization:${org}`;
   const h = { Authorization: `Bearer ${token}`, 'LinkedIn-Version': LI_VERSION, 'X-Restli-Protocol-Version': '2.0.0', 'Content-Type': 'application/json' };
   const { body: init } = await req('https://api.linkedin.com/rest/documents?action=initializeUpload',
     { method: 'POST', headers: h, body: JSON.stringify({ initializeUploadRequest: { owner } }) });
   const { uploadUrl, document } = init.value;
+  if (process.env.MODO === 'ensaio') return console.log(`LinkedIn (ensaio): token e página OK, upload do documento liberado (${document}). Nada publicado.`);
   await req(uploadUrl, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: fs.readFileSync(pdf) });
   await sleep(8000);
   const { res } = await req('https://api.linkedin.com/rest/posts', {
