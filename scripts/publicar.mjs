@@ -14,6 +14,18 @@ const GRAPH = `https://graph.facebook.com/${process.env.GRAPH_VERSION || 'v23.0'
 const LI_VERSION = process.env.LINKEDIN_VERSION || '202608';
 const RAW = 'https://raw.githubusercontent.com/justinmarcossss/cbrdoc-feed-publicacao/main/';
 
+// Modo verificar: só confere se as chaves funcionam, sem publicar nada.
+if (process.env.MODO === 'verificar') {
+  const { IG_USER_ID: id, IG_ACCESS_TOKEN: token } = process.env;
+  if (!id || !token) { console.log('Instagram: chaves ainda não configuradas.'); process.exit(1); }
+  const r = await fetch(`${GRAPH}/${id}?fields=username,name,media_count&access_token=${token}`);
+  const j = await r.json();
+  if (!r.ok) { console.error('Instagram: ERRO', JSON.stringify(j.error || j)); process.exit(1); }
+  const lim = await (await fetch(`${GRAPH}/${id}/content_publishing_limit?fields=quota_usage,config&access_token=${token}`)).json();
+  console.log(`Instagram OK: @${j.username} (${j.media_count} posts). Limite de publicação: ${JSON.stringify(lim.data?.[0] || lim.error?.message || lim)}`);
+  process.exit(0);
+}
+
 const hoje = process.env.DATA ||
   new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
 const agenda = JSON.parse(fs.readFileSync(AGENDA, 'utf8'));
