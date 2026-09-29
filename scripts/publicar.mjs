@@ -14,6 +14,19 @@ const GRAPH = `https://graph.facebook.com/${process.env.GRAPH_VERSION || 'v23.0'
 const LI_VERSION = process.env.LINKEDIN_VERSION || '202608';
 const RAW = 'https://raw.githubusercontent.com/justinmarcossss/cbrdoc-feed-publicacao/main/';
 
+// Sem IG_USER_ID, descobre a conta do Instagram a partir do token (só precisa do token).
+if (process.env.IG_ACCESS_TOKEN && !process.env.IG_USER_ID) {
+  const r = await fetch(`${GRAPH}/me/accounts?fields=name,instagram_business_account{username}&access_token=${process.env.IG_ACCESS_TOKEN}`);
+  const j = await r.json();
+  if (j.error) console.error('Instagram: não consegui listar as páginas do token:', j.error.message);
+  const contas = (j.data || []).filter(p => p.instagram_business_account);
+  const conta = contas.find(p => /cbr/i.test(p.instagram_business_account.username || p.name)) || contas[0];
+  if (conta) {
+    process.env.IG_USER_ID = conta.instagram_business_account.id;
+    console.log(`Conta do Instagram encontrada: @${conta.instagram_business_account.username} (página ${conta.name}).`);
+  }
+}
+
 // Modo verificar: só confere se as chaves funcionam, sem publicar nada.
 if (process.env.MODO === 'verificar') {
   const { IG_USER_ID: id, IG_ACCESS_TOKEN: token } = process.env;

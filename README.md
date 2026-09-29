@@ -14,7 +14,7 @@ Em **Settings → Secrets and variables → Actions → New repository secret**:
 
 | Segredo | O que é |
 |---|---|
-| `IG_USER_ID` | ID da conta comercial do Instagram |
+| `IG_USER_ID` | Opcional: o robô descobre sozinho a partir do token |
 | `IG_ACCESS_TOKEN` | Token da Meta com `instagram_content_publish` (de preferência de um usuário do sistema do Business Manager, que não expira) |
 | `LINKEDIN_ORG_ID` | ID numérico da página da CBRdoc no LinkedIn |
 | `LINKEDIN_ACCESS_TOKEN` | Token do LinkedIn com `w_organization_social` |
