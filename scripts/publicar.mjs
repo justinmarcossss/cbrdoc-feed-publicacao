@@ -76,6 +76,7 @@ async function instagram() {
     if (body.status_code === 'ERROR') throw new Error('Instagram recusou o carrossel (status ERROR).');
     await sleep(5000);
   }
+  if (process.env.MODO === 'ensaio') return console.log(`Instagram (ensaio): carrossel ${carrossel.id} montado e aceito pela Meta, NÃO publicado.`);
   const { body: pub } = await req(`${GRAPH}/${id}/media_publish`, form({ creation_id: carrossel.id }));
   registro[post.slug].instagram = { id: pub.id, em: new Date().toISOString() };
   console.log(`Instagram: publicado (${pub.id}).`);
@@ -88,7 +89,7 @@ async function linkedin() {
   const { LINKEDIN_ORG_ID: org, LINKEDIN_ACCESS_TOKEN: token } = process.env;
   if (registro[post.slug].linkedin) return console.log('LinkedIn: já publicado, pulando.');
   const pdf = `pdf/${post.slug}.pdf`;
-  if (!org || !token) return console.log(`LinkedIn (simulação): documento ${pdf} + legenda.`);
+  if (!org || !token || process.env.MODO === 'ensaio') return console.log(`LinkedIn (simulação): documento ${pdf} + legenda.`);
   const owner = `urn:li:organization:${org}`;
   const h = { Authorization: `Bearer ${token}`, 'LinkedIn-Version': LI_VERSION, 'X-Restli-Protocol-Version': '2.0.0', 'Content-Type': 'application/json' };
   const { body: init } = await req('https://api.linkedin.com/rest/documents?action=initializeUpload',

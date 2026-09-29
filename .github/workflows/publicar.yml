@@ -10,7 +10,7 @@ on:
         description: 'Data a publicar (AAAA-MM-DD). Vazio = hoje.'
         required: false
       modo:
-        description: 'publicar ou verificar (verificar só testa as chaves, sem postar)'
+        description: 'verificar (testa as chaves), ensaio (monta o carrossel sem postar) ou publicar'
         required: false
         default: 'verificar'
 
