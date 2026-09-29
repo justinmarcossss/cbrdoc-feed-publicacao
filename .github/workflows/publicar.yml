@@ -1,0 +1,47 @@
+name: Publicar post do dia
+
+on:
+  schedule:
+    # 13:00 UTC = 10:00 em São Paulo. Roda todo dia; só publica se houver post na agenda.
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+    inputs:
+      data:
+        description: 'Data a publicar (AAAA-MM-DD). Vazio = hoje.'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Publicar
+        env:
+          DATA: ${{ inputs.data }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          LINKEDIN_ORG_ID: ${{ secrets.LINKEDIN_ORG_ID }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          GRAPH_VERSION: ${{ vars.GRAPH_VERSION }}
+          LINKEDIN_VERSION: ${{ vars.LINKEDIN_VERSION }}
+        run: node scripts/publicar.mjs
+      - name: Registrar publicação
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain publicados.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+            git add publicados.json
+            git commit -m "Registro de publicação $(date -u +%F)"
+            git push
+          fi
