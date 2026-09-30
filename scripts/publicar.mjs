@@ -92,6 +92,8 @@ async function instagram() {
 
 // ---------- LinkedIn: documento PDF na página da empresa ----------
 // O texto do LinkedIn exige escapar caracteres reservados.
+// Título do documento no LinkedIn: no máximo 50 caracteres, cortando numa palavra inteira.
+const tituloDoc = t => t.length <= 50 ? t : t.slice(0, 50).replace(/\s+\S*$/, '').replace(/[,.;:]$/, '');
 const liEscape = s => s.replace(/[\\|{}@\[\]()<>#*_~]/g, c => '\\' + c);
 async function linkedin() {
   const { LINKEDIN_ORG_ID: org, LINKEDIN_ACCESS_TOKEN: token } = process.env;
@@ -110,7 +112,7 @@ async function linkedin() {
     method: 'POST', headers: h, body: JSON.stringify({
       author: owner, commentary: liEscape(post.legenda), visibility: 'PUBLIC',
       distribution: { feedDistribution: 'MAIN_FEED', targetEntities: [], thirdPartyDistributionChannels: [] },
-      content: { media: { title: post.titulo, id: document } },
+      content: { media: { title: tituloDoc(post.titulo), id: document } },
       lifecycleState: 'PUBLISHED', isReshareDisabledByAuthor: false
     })
   });
