@@ -2,8 +2,12 @@ name: Publicar post do dia
 
 on:
   schedule:
-    # 13:00 UTC = 10:00 em São Paulo. Roda todo dia; só publica se houver post na agenda.
-    - cron: '0 13 * * *'
+    # 10h03 a 11h33 em São Paulo (13:03 a 14:33 UTC). O GitHub pode atrasar o agendamento,
+    # então há várias tentativas: a primeira que rodar publica, as outras veem no registro que o post já saiu.
+    - cron: '3 13 * * *'
+    - cron: '33 13 * * *'
+    - cron: '3 14 * * *'
+    - cron: '33 14 * * *'
   workflow_dispatch:
     inputs:
       data:
