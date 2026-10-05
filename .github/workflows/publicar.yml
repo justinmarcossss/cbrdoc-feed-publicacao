@@ -1,6 +1,11 @@
 name: Publicar post do dia
 
 on:
+  # Gatilho principal: a rotina das 10h grava um arquivo em gatilho/ e o push dispara a publicação na hora.
+  push:
+    branches: [main]
+    paths: ['gatilho/**']
+  # Reserva: o agendamento do GitHub pode atrasar horas, mas garante que o post saia no mesmo dia.
   schedule:
     # 10h03 a 11h33 em São Paulo (13:03 a 14:33 UTC). O GitHub pode atrasar o agendamento,
     # então há várias tentativas: a primeira que rodar publica, as outras veem no registro que o post já saiu.
