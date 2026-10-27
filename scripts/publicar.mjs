@@ -43,6 +43,19 @@ if (process.env.MODO === 'verificar') {
     const app = await (await fetch(`${GRAPH}/${t.app_id}?fields=name,link&access_token=${token}`)).json();
     console.log('App:', JSON.stringify(app.error ? app.error.message : app));
   }
+  {
+    const { LINKEDIN_ORG_ID: org, LINKEDIN_ACCESS_TOKEN: lt } = process.env;
+    if (!org || !lt) console.log('LinkedIn: chaves ainda não configuradas.');
+    else {
+      const r2 = await fetch('https://api.linkedin.com/rest/documents?action=initializeUpload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${lt}`, 'LinkedIn-Version': LI_VERSION, 'X-Restli-Protocol-Version': '2.0.0', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initializeUploadRequest: { owner: `urn:li:organization:${org}` } })
+      });
+      const t2 = await r2.text();
+      console.log(r2.ok ? `LinkedIn OK: token e página ${org} aceitos (upload de documento liberado, nada publicado).` : `LinkedIn: ERRO ${r2.status} ${t2.slice(0, 400)}`);
+    }
+  }
   console.log(`Instagram OK: @${j.username} (${j.media_count} posts). Limite de publicação: ${JSON.stringify(lim.data?.[0] || lim.error?.message || lim)}`);
   process.exit(0);
 }
