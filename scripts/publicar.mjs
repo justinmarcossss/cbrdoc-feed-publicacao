@@ -98,7 +98,17 @@ async function instagram() {
     await sleep(5000);
   }
   if (process.env.MODO === 'ensaio') return console.log(`Instagram (ensaio): carrossel ${carrossel.id} montado e aceito pela Meta, NÃO publicado.`);
-  const { body: pub } = await req(`${GRAPH}/${id}/media_publish`, form({ creation_id: carrossel.id }));
+  // A Meta às vezes ainda está processando o carrossel ("Media ID is not available" / "aguarde um momento"):
+  // espera e tenta de novo, até 6 vezes (cerca de 3 minutos).
+  let pub;
+  for (let t = 1; ; t++) {
+    try { ({ body: pub } = await req(`${GRAPH}/${id}/media_publish`, form({ creation_id: carrossel.id }))); break; }
+    catch (e) {
+      if (t >= 6 || !/2207027|9007|not available|n[ãa]o est[áa] pronta/i.test(e.message)) throw e;
+      console.log(`Instagram: mídia ainda em processamento, nova tentativa em 30s (${t}/5)`);
+      await sleep(30000);
+    }
+  }
   registro[post.slug].instagram = { id: pub.id, em: new Date().toISOString() };
   console.log(`Instagram: publicado (${pub.id}).`);
 }
